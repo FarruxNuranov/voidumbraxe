@@ -1,28 +1,35 @@
-// Фоновое видео + проверка ориентации телефона
+// Фоновое видео: ничего не запускаем, пока всё не загрузится
 const bgVideo = document.getElementById('bg-video');
-const rotateOverlay = document.getElementById('rotate-overlay');
-let wasLandscape = false;
+const loader = document.getElementById('loader');
+let assetsReady = false;
 
-function checkOrientation() {
-    const isPortrait = window.innerHeight > window.innerWidth;
-    if (isPortrait) {
-        // Повернули обратно — всё начинается заново
-        if (wasLandscape) {
-            location.reload();
-            return;
-        }
-        rotateOverlay.classList.add('active');
-        bgVideo.pause();
-    } else {
-        wasLandscape = true;
-        rotateOverlay.classList.remove('active');
-        bgVideo.play().catch(() => {});
-    }
+function hideLoader() {
+    if (assetsReady) return;
+    assetsReady = true;
+    loader.classList.add('hidden');
+    bgVideo.play().catch(() => {});
 }
 
-window.addEventListener('orientationchange', () => setTimeout(checkOrientation, 300));
-window.addEventListener('resize', checkOrientation);
-checkOrientation();
+const videoReady = new Promise((resolve) => {
+    if (bgVideo.readyState >= 3) resolve();
+    else bgVideo.addEventListener('canplaythrough', resolve, { once: true });
+});
+
+// Предзагружаем всё для следующих страниц, чтобы не было лагов при переходах
+const PRELOAD_ASSETS = [
+    'music.mp3',
+    'gif1.gif', 'gif2.gif',
+    'd1.jpg', 'd2.jpg', 'd3.jpg',
+    'cause.html', 'cause.css', 'cause.js',
+    'last.html'
+];
+const assetsPreloaded = Promise.all(
+    PRELOAD_ASSETS.map((url) => fetch(url).then((r) => r.blob()).catch(() => {}))
+);
+
+Promise.all([videoReady, assetsPreloaded]).then(hideLoader);
+// Страховка: если что-то зависло, снимаем загрузку через 20 секунд
+setTimeout(hideLoader, 20000);
 
 // Cursor following effect
 const cursor = document.querySelector('.cursor');

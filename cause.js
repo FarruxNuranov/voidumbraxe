@@ -1,8 +1,9 @@
-// Проверка ориентации: сайт работает только горизонтально
+// Музыка включается только после нажатия «Жми сюда»
 const bgVideoEl = document.getElementById('bg-video');
 const bgMusicEl = document.getElementById('bg-music');
-const rotateOverlayEl = document.getElementById('rotate-overlay');
-let wasLandscape = false;
+const loaderEl = document.getElementById('loader');
+let musicUnlocked = false;
+let assetsReady = false;
 
 // Песня начинается с 11-й секунды
 const MUSIC_START = 11;
@@ -14,33 +15,26 @@ if (bgMusicEl.readyState >= 1) {
     });
 }
 
-// Музыка включается только после нажатия «Жми сюда»
-let musicUnlocked = false;
-
-function checkOrientationGate() {
-    const isPortrait = window.innerHeight > window.innerWidth;
-    if (isPortrait) {
-        // Повернули обратно — всё начинается заново с первой страницы
-        if (wasLandscape) {
-            location.href = 'index.html';
-            return;
-        }
-        rotateOverlayEl.classList.add('active');
-        bgVideoEl.pause();
-        bgMusicEl.pause();
-    } else {
-        wasLandscape = true;
-        rotateOverlayEl.classList.remove('active');
-        bgVideoEl.play().catch(() => {});
-        if (musicUnlocked) {
-            bgMusicEl.play().catch(() => {});
-        }
-    }
+// Пока всё не загрузится — ничего не запускаем
+function hideLoader() {
+    if (assetsReady) return;
+    assetsReady = true;
+    loaderEl.classList.add('hidden');
+    bgVideoEl.play().catch(() => {});
 }
 
-window.addEventListener('orientationchange', () => setTimeout(checkOrientationGate, 300));
-window.addEventListener('resize', checkOrientationGate);
-checkOrientationGate();
+const videoReady = new Promise((resolve) => {
+    if (bgVideoEl.readyState >= 3) resolve();
+    else bgVideoEl.addEventListener('canplaythrough', resolve, { once: true });
+});
+const musicReady = new Promise((resolve) => {
+    if (bgMusicEl.readyState >= 3) resolve();
+    else bgMusicEl.addEventListener('canplaythrough', resolve, { once: true });
+});
+
+Promise.all([videoReady, musicReady]).then(hideLoader);
+// Страховка: если что-то зависло, снимаем загрузку через 20 секунд
+setTimeout(hideLoader, 20000);
 
  // Reasons database
  const reasons = [
