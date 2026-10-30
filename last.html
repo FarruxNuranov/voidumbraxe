@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Немного о тебе ✨</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Quicksand:wght@300;400;500;600&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg,
+                    #ffd1dc 0%,
+                    #e6e6fa 25%,
+                    #ffefd5 50%,
+                    #e6e6fa 75%,
+                    #ffd1dc 100%);
+            background-size: 400% 400%;
+            animation: gradientFlow 15s ease infinite;
+            font-family: 'Quicksand', sans-serif;
+            overflow-x: hidden;
+            color: #4a4a4a;
+        }
+
+        @keyframes gradientFlow {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        /* Фоновое видео */
+        #bg-video {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            object-fit: cover;
+            z-index: 0;
+        }
+
+        .bg-dim {
+            position: fixed;
+            inset: 0;
+            background: rgba(255, 240, 248, 0.18);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* Подсказка «листай вниз» */
+        #scroll-hint {
+            position: fixed;
+            bottom: 1.5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 40;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #ff2d8d;
+            background: rgba(255, 255, 255, 0.85);
+            padding: 0.6rem 1.4rem;
+            border-radius: 50px;
+            box-shadow: 0 5px 15px rgba(255, 105, 180, 0.4);
+            animation: hintBounce 1.5s ease-in-out infinite;
+            transition: opacity 0.5s;
+            pointer-events: none;
+        }
+
+        #scroll-hint.hidden {
+            opacity: 0;
+        }
+
+        @keyframes hintBounce {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(-10px); }
+        }
+
+        /* Кнопка музыки */
+        #music-toggle {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 50;
+            width: 56px;
+            height: 56px;
+            border: none;
+            border-radius: 50%;
+            font-size: 1.6rem;
+            background: linear-gradient(45deg, #ff69b4, #da70d6);
+            box-shadow: 0 5px 15px rgba(255, 105, 180, 0.5);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        #music-toggle:hover {
+            transform: scale(1.15);
+        }
+
+        /* Экран «поверни телефон» */
+        #rotate-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: #000;
+            z-index: 100;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        #rotate-overlay.active {
+            display: flex;
+        }
+
+        .rotate-phone {
+            font-size: 5rem;
+            animation: rotatePhone 2s ease-in-out infinite;
+            margin-bottom: 1.5rem;
+        }
+
+        @keyframes rotatePhone {
+            0%, 20% { transform: rotate(0deg); }
+            50%, 70% { transform: rotate(90deg); }
+            100% { transform: rotate(0deg); }
+        }
+
+        .rotate-text {
+            font-size: 1.4rem;
+            color: #ff69b4;
+            font-weight: bold;
+            line-height: 1.6;
+        }
+
+        /* Enhanced Sparkle Effect */
+        .magic-sparkles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .sparkle {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background-color: white;
+            animation: twinkle var(--duration, 4s) ease-in-out infinite;
+            opacity: 0;
+        }
+
+        @keyframes twinkle {
+
+            0%,
+            100% {
+                opacity: 0;
+                transform: scale(0.5);
+            }
+
+            50% {
+                opacity: 0.8;
+                transform: scale(1);
+            }
+        }
+
+        /* Generate 50 sparkles with different positions and animations */
+        .magic-sparkles::before,
+        .magic-sparkles::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-image: radial-gradient(circle, white 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: sparkleLayer 8s linear infinite;
+            opacity: 0.5;
+        }
+
+        .magic-sparkles::after {
+            animation-delay: -4s;
+            transform: rotate(45deg);
+        }
+
+        @keyframes sparkleLayer {
+            0% {
+                transform: translateY(0);
+            }
+
+            100% {
+                transform: translateY(-50px);
+            }
+        }
+
+        /* Floating Hearts */
+        .floating-hearts {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .heart {
+            position: absolute;
+            font-size: 1.5rem;
+            color: rgba(255, 105, 180, 0.6);
+            animation: floatHeart var(--float-duration, 6s) ease-in-out infinite;
+            animation-delay: var(--delay, 0s);
+        }
+
+        @keyframes floatHeart {
+            0% {
+                transform: translate(0, 100vh) rotate(0deg);
+            }
+
+            100% {
+                transform: translate(var(--translate-x, 0), -100vh) rotate(360deg);
+            }
+        }
+
+        /* Welcome Section */
+        .welcome {
+            text-align: center;
+            padding: 4rem 2rem;
+            position: relative;
+            z-index: 3;
+        }
+
+        .welcome h1 {
+            font-family: 'Dancing Script', cursive;
+            font-size: 4rem;
+            color: #ff2d8d;
+            text-shadow:
+                0 0 12px rgba(255, 255, 255, 0.95),
+                0 0 24px rgba(255, 255, 255, 0.8),
+                2px 2px 6px rgba(0, 0, 0, 0.35);
+            animation: fadeInScale 2s ease;
+        }
+
+        .welcome p {
+            font-size: 1.2rem;
+            max-width: 600px;
+            margin: 1.5rem auto;
+            line-height: 1.6;
+            font-weight: 600;
+            color: #3a3a3a;
+            text-shadow:
+                0 0 10px rgba(255, 255, 255, 0.95),
+                0 0 20px rgba(255, 255, 255, 0.85);
+            animation: fadeIn 2s ease 0.5s both;
+        }
+
+        /* Enhanced Memory Cards */
+        .memory-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            z-index: 3;
+            position: relative;
+        }
+
+        .memory-card {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            padding: 1.5rem;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .memory-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .memory-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            transform: translateX(-100%);
+            transition: 0.5s;
+        }
+
+        .memory-card:hover::before {
+            transform: translateX(100%);
+        }
+
+        .memory-img {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            border-radius: 15px;
+            margin-bottom: 1rem;
+            transition: transform 0.5s ease;
+        }
+
+        .memory-card:hover .memory-img {
+            transform: scale(1.05);
+        }
+
+        .memory-date {
+            font-family: 'Dancing Script', cursive;
+            color: #ff69b4;
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .memory-caption {
+            font-size: 1rem;
+            line-height: 1.5;
+            color: #666;
+        }
+
+        /* Final Message Section */
+        .final-message {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(10px);
+            margin-top: 3rem;
+            position: relative;
+            z-index: 3;
+        }
+
+        .final-message h2 {
+            font-family: 'Dancing Script', cursive;
+            font-size: 3rem;
+            color: #ff2d8d;
+            text-shadow:
+                0 0 12px rgba(255, 255, 255, 0.95),
+                0 0 24px rgba(255, 255, 255, 0.8);
+            margin-bottom: 2rem;
+            animation: heartbeat 2s infinite;
+        }
+
+        @keyframes heartbeat {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+        }
+
+        .final-message p {
+            font-size: 1.2rem;
+            max-width: 800px;
+            margin: 0 auto 2rem;
+            line-height: 1.8;
+        }
+
+        .goodbye-btn {
+            display: inline-block;
+            padding: 1rem 2rem;
+            font-size: 1.2rem;
+            background: linear-gradient(45deg, #ff69b4, #da70d6);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(255, 105, 180, 0.4);
+            animation: float 3s infinite ease-in-out;
+        }
+
+        .goodbye-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(255, 105, 180, 0.6);
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeInScale {
+            0% {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes fadeIn {
+            0% {
+                opacity: 0;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
+        /* Generate Hearts */
+        .js-generate-hearts {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 12px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(45deg, #ff69b4, #da70d6);
+            border-radius: 6px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .welcome h1 {
+                font-size: 3rem;
+            }
+
+            .memory-container {
+                grid-template-columns: 1fr;
+            }
+
+            .final-message h2 {
+                font-size: 2.5rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <video id="bg-video" src="bg.mp4" autoplay loop muted playsinline preload="auto"></video>
+    <audio id="bg-music" src="music.mp3" loop preload="auto"></audio>
+    <button id="music-toggle" title="Музыка">🔇</button>
+    <div id="scroll-hint">Листай вниз 👇</div>
+    <div class="bg-dim"></div>
+
+    <div id="rotate-overlay">
+        <div class="rotate-phone">📱</div>
+        <div class="rotate-text">Поверни телефон горизонтально,<br>чтобы открыть сюрприз 🔄✨</div>
+    </div>
+    <div class="magic-sparkles"></div>
+    <div class="floating-hearts">
+        <!-- Hearts will be generated via CSS -->
+        <div class="heart" style="--float-duration: 6s; --delay: 0s; --translate-x: 20px;">💝</div>
+        <div class="heart" style="--float-duration: 8s; --delay: 1s; --translate-x: -30px;">💖</div>
+        <div class="heart" style="--float-duration: 7s; --delay: 2s; --translate-x: 40px;">💗</div>
+        <div class="heart" style="--float-duration: 9s; --delay: 3s; --translate-x: -20px;">💓</div>
+        <div class="heart" style="--float-duration: 5s; --delay: 4s; --translate-x: 30px;">💕</div>
+    </div>
+
+    <section class="welcome">
+        <h1>Немного о том, какая ты классная</h1>
+        <p>Пусть мы общаемся на расстоянии и знакомы ещё совсем мало, но каждый разговор с тобой — отдельное приключение. Спасибо за все советы, приколы и смех...</p>
+    </section>
+
+    <div class="memory-container">
+        <div class="memory-card">
+            <img src="./d1.jpg" alt="Гуру артефактов" class="memory-img">
+            <div class="memory-date">Гуру артефактов</div>
+            <div class="memory-caption">Благодаря твоим советам мои эхо наконец-то перестали быть мусором. Ты лучший наставник по Wuthering Waves!❤️</div>
+        </div>
+        <div class="memory-card">
+            <img src="./d2.jpg" alt="Капитан команды" class="memory-img">
+            <div class="memory-date">Стратег команды</div>
+            <div class="memory-caption">Твои советы по сборке команды — золото. Любой мой состав превращается в имбу.😊🎮</div>
+        </div>
+        <div class="memory-card">
+            <img src="./d3.jpg" alt="Душа компании" class="memory-img">
+            <div class="memory-date">Душа компании</div>
+            <div class="memory-caption">Ты самая весёлая из всех, кого я знаю — с тобой любой день становится ярче.🌸💖</div>
+        </div>
+
+    </div>
+
+    <section class="final-message">
+        <h2>Спасибо за все моменты</h2>
+        <p>Каждый смех, каждый разговор и каждый наш прикол в чате — по-настоящему особенные.💫<br>
+            Я очень ценю наше общение и тот позитив, который ты всегда приносишь.<br>
+            В твой день рождения желаю бесконечного счастья, удачи и успеха во всём.🌸</p>
+        <p>Пусть тебе всегда везёт — и в игре, и в жизни. Оставайся такой же весёлой и классной.✨</p>
+        <a href="#" class="goodbye-btn">До встречи в чате 💝</a>
+    </section>
+
+    <script>
+        const bgVideoEl = document.getElementById('bg-video');
+        const bgMusicEl = document.getElementById('bg-music');
+        const rotateOverlayEl = document.getElementById('rotate-overlay');
+        let wasLandscape = false;
+
+        // Песня начинается с 45-й секунды
+        const MUSIC_START = 45;
+        if (bgMusicEl.readyState >= 1) {
+            bgMusicEl.currentTime = MUSIC_START;
+        } else {
+            bgMusicEl.addEventListener('loadedmetadata', () => {
+                bgMusicEl.currentTime = MUSIC_START;
+            });
+        }
+
+        function checkOrientationGate() {
+            const isPortrait = window.innerHeight > window.innerWidth;
+            if (isPortrait) {
+                // Повернули обратно — всё начинается заново с первой страницы
+                if (wasLandscape) {
+                    location.href = 'index.html';
+                    return;
+                }
+                rotateOverlayEl.classList.add('active');
+                bgVideoEl.pause();
+                bgMusicEl.pause();
+            } else {
+                wasLandscape = true;
+                rotateOverlayEl.classList.remove('active');
+                bgVideoEl.play().catch(() => {});
+                bgMusicEl.play().catch(() => {});
+            }
+        }
+
+        // Кнопка включения/выключения музыки
+        const musicToggle = document.getElementById('music-toggle');
+
+        function updateMusicIcon() {
+            musicToggle.textContent = bgMusicEl.paused ? '🔇' : '🔊';
+        }
+
+        musicToggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            clearInterval(musicRetry);
+            if (bgMusicEl.paused) {
+                manuallyPaused = false;
+                bgMusicEl.play().catch(() => {});
+            } else {
+                manuallyPaused = true;
+                bgMusicEl.pause();
+            }
+        });
+
+        bgMusicEl.addEventListener('play', updateMusicIcon);
+        bgMusicEl.addEventListener('pause', updateMusicIcon);
+
+        // Если браузер заблокировал автозапуск музыки после рефреша —
+        // включаем при первом любом действии (тап, клик, клавиша, скролл)
+        let manuallyPaused = false;
+
+        function tryResumeMusic(e) {
+            if (e && e.target === musicToggle) return;
+            if (manuallyPaused) return;
+            if (window.innerWidth > window.innerHeight && bgMusicEl.paused) {
+                bgMusicEl.play().catch(() => {});
+            }
+        }
+
+        ['pointerdown', 'touchstart', 'keydown', 'wheel', 'scroll'].forEach((evt) => {
+            document.addEventListener(evt, tryResumeMusic, { passive: true });
+        });
+
+        // Прячем подсказку «листай вниз», когда начали скроллить
+        const scrollHint = document.getElementById('scroll-hint');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 80) {
+                scrollHint.classList.add('hidden');
+            } else {
+                scrollHint.classList.remove('hidden');
+            }
+        }, { passive: true });
+
+        window.addEventListener('orientationchange', () => setTimeout(checkOrientationGate, 300));
+        window.addEventListener('resize', checkOrientationGate);
+        checkOrientationGate();
+
+        // После обновления страницы пробуем запустить песню заново, пока не получится
+        const musicRetry = setInterval(() => {
+            if (!bgMusicEl.paused) {
+                clearInterval(musicRetry);
+                return;
+            }
+            if (window.innerWidth > window.innerHeight) {
+                bgMusicEl.play().catch(() => {});
+            }
+        }, 1000);
+    </script>
+</body>
+
+</html>
